@@ -28,7 +28,7 @@ namespace om_svc_inventory.Controllers
             {
                 retval = this.StatusCode((int)HttpStatusCode.InternalServerError, "Unable to retrieve categories");
             }
-            else
+            else 
             {
                 retval = this.Ok(categoryList);
             }
