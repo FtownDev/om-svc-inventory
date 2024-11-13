@@ -1,6 +1,5 @@
 using om_svc_inventory;
 
-
 //builder.Services.AddEndpointsApiExplorer();
 //builder.Services.AddSwaggerGen();
 var builder = WebApplication.CreateBuilder(args);
