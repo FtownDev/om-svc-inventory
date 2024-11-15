@@ -20,3 +20,4 @@ RUN dotnet publish "om-svc-inventory/om-svc-inventory.csproj" -c Release -o /app
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app .
+ENTRYPOINT ["dotnet", "om-svc-inventory.dll"]
