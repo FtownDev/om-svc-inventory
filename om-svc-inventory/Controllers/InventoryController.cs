@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using om_svc_inventory.Data;
 using om_svc_inventory.DTO;
 using om_svc_inventory.Models;
+using om_svc_inventory.Services;
 using System.Net;
 
 namespace om_svc_inventory.Controllers
@@ -12,10 +13,11 @@ namespace om_svc_inventory.Controllers
     public class InventoryController : ControllerBase
     {
         private readonly InventoryDbContext _context;
-
-        public InventoryController(InventoryDbContext context)
+        private readonly ICacheService _cacheService;
+        public InventoryController(InventoryDbContext context, ICacheService cache)
         {
             this._context = context;
+            this._cacheService = cache;
         }
 
         [HttpGet]
@@ -23,15 +25,26 @@ namespace om_svc_inventory.Controllers
         public async Task<IActionResult> GetAllInventoryCategoriesAsync(CancellationToken cancellationToken)
         {
             ActionResult retval;
-            var categoryList = await this._context.InventoryCategories.OrderBy(x => x.Name).ToListAsync();
-            if (!categoryList.Any() || categoryList.Count == 0)
+            var cacheList = _cacheService.GetData<IEnumerable<InventoryCategory>>(key: "category/all");
+
+            if (cacheList != null) 
             {
-                retval = this.StatusCode((int)HttpStatusCode.InternalServerError, "Unable to retrieve categories");
+                retval = this.Ok(cacheList);
             }
-            else 
+            else
             {
-                retval = this.Ok(categoryList);
+                var categoryList = await this._context.InventoryCategories.OrderBy(x => x.Name).ToListAsync();
+                if (!categoryList.Any() || categoryList.Count == 0)
+                {
+                    retval = this.StatusCode((int)HttpStatusCode.InternalServerError, "Unable to retrieve categories");
+                }
+                else
+                {
+                    _cacheService.SetData("categories/all", categoryList, 10);
+                    retval = this.Ok(categoryList);
+                }
             }
+           
             return retval;
         }
 
@@ -40,16 +53,27 @@ namespace om_svc_inventory.Controllers
         public async Task<IActionResult> GetAllInventoryItemsAsync(CancellationToken cancellationToken)
         {
             ActionResult retval;
-            var itemList = await this._context.InventoryItems.OrderBy(x => x.CategoryId).ToListAsync();
-
-            if (!itemList.Any() || itemList.Count == 0)
+            var cacheList = _cacheService.GetData<IEnumerable<InventoryCategory>>(key: "items/all");
+            if (cacheList != null)
             {
-                retval = this.StatusCode((int)HttpStatusCode.InternalServerError, "Unable to retrieve items");
+                retval = this.Ok(cacheList);
             }
             else
             {
-                retval = this.Ok(itemList);
+                var itemList = await this._context.InventoryItems.OrderBy(x => x.CategoryId).ToListAsync();
+
+                if (!itemList.Any() || itemList.Count == 0)
+                {
+                    retval = this.StatusCode((int)HttpStatusCode.InternalServerError, "Unable to retrieve items");
+                }
+                else
+                {
+                    _cacheService.SetData("items/all", itemList, 10);
+                    retval = this.Ok(itemList);
+                }
             }
+
+            
 
             return retval;
         }
@@ -106,6 +130,7 @@ namespace om_svc_inventory.Controllers
                 }
                 else
                 {
+                    _cacheService.InvalidateKeys(new List<string>() { "items/all", $"items/category{categoryId}" });
                     retval = this.Ok(item);
                 }
             }
@@ -136,6 +161,7 @@ namespace om_svc_inventory.Controllers
             }
             else
             {
+                _cacheService.InvalidateKeys(new List<string>() { "category/all" });
                 retval = this.Ok(newCategory);
             }
 
