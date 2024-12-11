@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using om_svc_inventory.Data;
+using om_svc_inventory.Services;
+using StackExchange.Redis;
 
 namespace om_svc_inventory
 {
@@ -22,6 +24,14 @@ namespace om_svc_inventory
             services.AddControllers();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
+
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = Configuration.GetConnectionString("RedisCache");
+                options.InstanceName = "Inventory_";
+            });
+
+            services.AddScoped<ICacheService, RedisCacheService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
