@@ -1,0 +1,6 @@
+@om_svc_inventory_HostAddress = http://localhost:5238
+
+GET {{om_svc_inventory_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
