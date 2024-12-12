@@ -40,7 +40,7 @@ namespace om_svc_inventory.Controllers
                 }
                 else
                 {
-                    _cacheService.SetData("categories/all", categoryList, 10);
+                    _cacheService.SetData("category/all", categoryList, 10);
                     retval = this.Ok(categoryList);
                 }
             }
@@ -53,7 +53,7 @@ namespace om_svc_inventory.Controllers
         public async Task<IActionResult> GetAllInventoryItemsAsync(CancellationToken cancellationToken)
         {
             ActionResult retval;
-            var cacheList = _cacheService.GetData<IEnumerable<InventoryCategory>>(key: "items/all");
+            var cacheList = _cacheService.GetData<IEnumerable<InventoryItem>>(key: "items/all");
             if (cacheList != null)
             {
                 retval = this.Ok(cacheList);
