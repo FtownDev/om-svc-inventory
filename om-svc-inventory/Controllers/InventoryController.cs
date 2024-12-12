@@ -111,7 +111,7 @@ namespace om_svc_inventory.Controllers
                 retval = this.BadRequest("Item category does not exist");
             }
             else 
-            {
+            { 
                 InventoryItem newItem = new()
                 {
                     Id = Guid.NewGuid(),
